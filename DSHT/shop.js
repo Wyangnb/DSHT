@@ -19,8 +19,20 @@ exports.findAllShop = function (callback) {
     "select shop_type,shop_id,shop_name,shop_img,shop_price,shop_xl,shop_sy,shop_sum from shop";
   connection.query(sql, (err, data) => {
     if (err) {
-      callback(err);
+      callback(result(1, "系统异常", err));
     }
-    callback(result(0, "查询成功", data));
+    let results = data.reduce((acc, cur) => {
+      const type = acc.find((item) => item.shop_type === cur.shop_type);
+      if (type) {
+        type.types.push(cur);
+      } else {
+        acc.push({
+          shop_type: cur.shop_type,
+          types: [cur],
+        });
+      }
+      return acc;
+    }, []);
+    callback(result(0, "查询成功", results));
   });
 };
